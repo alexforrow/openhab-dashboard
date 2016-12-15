@@ -6,8 +6,11 @@ require 'json'
 # object also handles authorization with SmartThings.
 # 
 class OHApp
-  OPENHAB_SERVER = "localhost"
-  OPENHAB_PORT = 8080
+  OPENHAB_SERVER = 'localhost'
+  OPENHAB_PORT = 8443
+  OPENHAB_SSL = true
+  OPENHAB_USER = 'openhab_user'
+  OPENHAB_PASSWORD = 'openhab_passwd'
   OPENHAB_V2   = false
 
   attr_reader :temperature, :currentConditions, :humidity, :pressure, :precipitation, :windSpeed, :temperatureLow, 
@@ -41,8 +44,10 @@ class OHApp
   # openHAB REST call
   def getState(itemID, data)
     http = Net::HTTP.new(OPENHAB_SERVER, OPENHAB_PORT)
-    http.use_ssl = false
-    response = http.request(Net::HTTP::Get.new("/rest/items/#{itemID}?type=json"))
+    http.use_ssl = OPENHAB_SSL
+    request = Net::HTTP::Get.new("/rest/items/#{itemID}?type=json")
+    request.basic_auth(OPENHAB_USER, OPENHAB_PASSWORD)
+    response = http.request(request)
     puts response.body()
     response.body()
   end
@@ -50,7 +55,7 @@ class OHApp
   def sendCommand(itemID, newState, data)
     puts "[DEBUG] PUT to REST api: '/rest/items/#{itemID} - data: #{newState}'"
     http = Net::HTTP.new(OPENHAB_SERVER, OPENHAB_PORT)
-    http.use_ssl = false
+    http.use_ssl = OPENHAB_SSL
     if OPENHAB_V2 
       #openHAB 2.0 rest API is slightly different to v1.x
       headers = "'Content-Type' => 'text/plain'"
@@ -59,7 +64,9 @@ class OHApp
       response = http.request(request)
     else
       #openHAB 1.x endpoint
-      response = http.request(Net::HTTP::Get.new("/CMD?#{itemID}=#{newState}")) 
+      request = Net::HTTP::Get.new("/CMD?#{itemID}=#{newState}")
+      request.basic_auth(OPENHAB_USER, OPENHAB_PASSWORD)
+      response = http.request(request)
     end      
     puts response.body()
     response.body()
@@ -67,7 +74,8 @@ class OHApp
 
   def refreshWeather()
     http = Net::HTTP.new(OPENHAB_SERVER, OPENHAB_PORT)
-    http.use_ssl = false
+    http.use_ssl = OPENHAB_SSL
+    http.basic_auth(OPENHAB_USER, OPENHAB_PASSWORD)
     response = http.request(Net::HTTP::Get.new("/rest/items/Weather?type=json"))
     #puts response.body()
     data = JSON.parse(response.body())

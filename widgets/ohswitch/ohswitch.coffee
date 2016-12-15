@@ -5,7 +5,7 @@ class Dashing.Ohswitch extends Dashing.ClickableWidget
 
   @accessor 'state',
     get: -> @_state ? 'OFF'
-    set: (key, value) -> @_state = value
+    set: (key, value) -> if value == 'ON' || value == '1' then @_state = 'ON' else @_state = 'OFF'
 
   @accessor 'icon',
     get: -> if @['icon'] then @['icon'] else

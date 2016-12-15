@@ -64,27 +64,27 @@ def make_web_friendly(file)
   "/" + File.basename(File.dirname(file)) + "/" + File.basename(file)
 end
  
-SCHEDULER.every @fetchNewImageEvery, first_in: 0 do
-	new_file1 = fetch_image(@camera1Host,@oldFile1,@newFile1,@camera1Port,@camera1Username,@camera1Password,@camera1URL)
-	new_file2 = fetch_image(@camera2Host,@oldFile2,@newFile2,@camera2Port,@camera2Username,@camera2Password,@camera2URL)
-	new_file3 = fetch_image(@camera3Host,@oldFile3,@newFile3,@camera3Port,@camera3Username,@camera3Password,@camera3URL)
-	new_file4 = fetch_image(@camera4Host,@oldFile4,@newFile4,@camera4Port,@camera4Username,@camera4Password,@camera4URL)
-	new_file5 = fetch_image(@camera5Host,@oldFile5,@newFile5,@camera5Port,@camera5Username,@camera5Password,@camera5URL)
-
-	if not File.exists?(@newFile1 && @newFile2 && @newFile3)
-		warn "Failed to Get Camera Images"
-	end
- 
-	send_event('camera1', image: make_web_friendly(@oldFile1))
-	send_event('camera2', image: make_web_friendly(@oldFile2))
-	send_event('camera3', image: make_web_friendly(@oldFile3))
-	send_event('camera4', image: make_web_friendly(@oldFile4))
-	send_event('camera5', image: make_web_friendly(@oldFile5))
-	sleep(@cameraDelay)
-	send_event('camera1', image: make_web_friendly(new_file1))
-	send_event('camera2', image: make_web_friendly(new_file2))
-	send_event('camera3', image: make_web_friendly(new_file3))
-	send_event('camera4', image: make_web_friendly(new_file4))
-	send_event('camera5', image: make_web_friendly(new_file5))
-	send_event('camTest', image: make_web_friendly(new_file5))
-end
+#SCHEDULER.every @fetchNewImageEvery, first_in: 0 do
+#	new_file1 = fetch_image(@camera1Host,@oldFile1,@newFile1,@camera1Port,@camera1Username,@camera1Password,@camera1URL)
+#	new_file2 = fetch_image(@camera2Host,@oldFile2,@newFile2,@camera2Port,@camera2Username,@camera2Password,@camera2URL)
+#	new_file3 = fetch_image(@camera3Host,@oldFile3,@newFile3,@camera3Port,@camera3Username,@camera3Password,@camera3URL)
+#	new_file4 = fetch_image(@camera4Host,@oldFile4,@newFile4,@camera4Port,@camera4Username,@camera4Password,@camera4URL)
+#	new_file5 = fetch_image(@camera5Host,@oldFile5,@newFile5,@camera5Port,@camera5Username,@camera5Password,@camera5URL)
+#
+#	if not File.exists?(@newFile1 && @newFile2 && @newFile3)
+#		warn "Failed to Get Camera Images"
+#	end
+# 
+#	send_event('camera1', image: make_web_friendly(@oldFile1))
+#	send_event('camera2', image: make_web_friendly(@oldFile2))
+#	send_event('camera3', image: make_web_friendly(@oldFile3))
+#	send_event('camera4', image: make_web_friendly(@oldFile4))
+#	send_event('camera5', image: make_web_friendly(@oldFile5))
+#	sleep(@cameraDelay)
+#	send_event('camera1', image: make_web_friendly(new_file1))
+#	send_event('camera2', image: make_web_friendly(new_file2))
+#	send_event('camera3', image: make_web_friendly(new_file3))
+#	send_event('camera4', image: make_web_friendly(new_file4))
+#	send_event('camera5', image: make_web_friendly(new_file5))
+#	send_event('camTest', image: make_web_friendly(new_file5))
+#end

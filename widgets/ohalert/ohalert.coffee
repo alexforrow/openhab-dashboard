@@ -8,7 +8,7 @@ class Dashing.Ohalert extends Dashing.Widget
     set: (key, value) -> @_state = value.toLowerCase()
 
   @accessor 'isAlertState', ->
-    (@get('state') == 'open' || @get('state') == 'on')
+    (@get('state') == 'open' || @get('state') == 'on' || @get('state') == '1')
 
   @accessor 'icon',
     get: -> if (@get('isAlertState')) then 'expand' else 'compress'
