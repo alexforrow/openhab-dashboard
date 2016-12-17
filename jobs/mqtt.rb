@@ -1,14 +1,15 @@
 require 'mqtt'
 
 # Set your MQTT server
-MQTT_SERVER = 'mqtt://localhost'
+MQTT_SERVER = YAML.load(File.open("settings.yml"))['mqtt']['uri']
+MQTT_RETRY = 10
 
 # Start a new thread for the MQTT client, retry connection on exception
 Thread.new {
   while true do
     begin
       MQTT::Client.connect(MQTT_SERVER) do |client|
-        puts 'Connected to MQTT'
+        puts '[MQTT] Connected'
         client.subscribe('openhab/dashboard/+')
 
         client.get do |topic,message|
@@ -17,13 +18,13 @@ Thread.new {
           value = message.split(' ').first
           time = message.split(' ').last
 
-          puts "Sending MQTT update for '#{item}' to value '#{value}' (updated #{time})"
+          puts "[MQTT] Received update for '#{item}' to value '#{value}' (updated #{time})"
           send_event(item, { state: value })
         end
       end
     rescue Exception =>e
-      puts "MQTT exception: " + e.to_s
+      puts "[MQTT] Exception: " + e.to_s + ". Waiting #{MQTT_RETRY}s before retry"
     end
-    sleep 10
+    sleep MQTT_RETRY
   end
 }

@@ -1,12 +1,10 @@
 require 'json'
 
-# URI to the installed app root
-host_uri = ENV["DASHING_URI"] || 'http://localhost:3030'
-
-app = OHApp.new()
+app = OHApp.new(YAML.load(File.open("settings.yml"))['openhab']['uri'])
 
 get '/openhab/dispatch' do
-  app.getState(params['deviceId'], params)
+  puts "Ignoring widget-triggered request for data for #{params['deviceId']}"
+  #app.getState(params['deviceId'], params)
 end
 
 post '/openhab/dispatch' do

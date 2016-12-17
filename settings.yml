@@ -1,0 +1,6 @@
+---
+mqtt:
+  uri: mqtts://user:password@localhost:8883
+
+openhab:
+  uri: https://user:password@localhost:8443

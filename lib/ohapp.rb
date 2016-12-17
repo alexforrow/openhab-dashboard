@@ -6,18 +6,15 @@ require 'json'
 # object also handles authorization with SmartThings.
 # 
 class OHApp
-  OPENHAB_SERVER = 'localhost'
-  OPENHAB_PORT = 8443
-  OPENHAB_SSL = true
-  OPENHAB_USER = 'openhab_user'
-  OPENHAB_PASSWORD = 'openhab_passwd'
-  OPENHAB_V2   = false
+  attr_reader :openhab_items_uri
 
   attr_reader :temperature, :currentConditions, :humidity, :pressure, :precipitation, :windSpeed, :temperatureLow, 
     :temperatureHigh, :weatherIcon, :weatherCode, :tomorrowTemperatureLow, :tomorrowTemperatureHigh, :tomorrowWeatherIcon, :tomorrowPrecipitation,
     :windSpeed, :windDirection, :windGust, :weatherObsTime, :sunrise, :sunset
 
-  def initialize()
+  def initialize(openhab_uri)
+    @openhab_items_uri = "#{openhab_uri}/rest/items"
+
     #@endpoint = endpoint
     @temperature=0.0
     @currentConditions=""
@@ -43,33 +40,38 @@ class OHApp
 
   # openHAB REST call
   def getState(itemID, data)
-    http = Net::HTTP.new(OPENHAB_SERVER, OPENHAB_PORT)
-    http.use_ssl = OPENHAB_SSL
-    request = Net::HTTP::Get.new("/rest/items/#{itemID}?type=json")
-    request.basic_auth(OPENHAB_USER, OPENHAB_PASSWORD)
-    response = http.request(request)
-    puts response.body()
-    response.body()
+    itemRequest(itemID)
   end
 
   def sendCommand(itemID, newState, data)
-    puts "[DEBUG] PUT to REST api: '/rest/items/#{itemID} - data: #{newState}'"
-    http = Net::HTTP.new(OPENHAB_SERVER, OPENHAB_PORT)
-    http.use_ssl = OPENHAB_SSL
-    if OPENHAB_V2 
-      #openHAB 2.0 rest API is slightly different to v1.x
-      headers = "'Content-Type' => 'text/plain'"
-      request = Net::HTTP::Post.new("/rest/items/#{itemID}", initheader = {'Content-Type' =>'text/plain'})
-      request.body = newState
-      response = http.request(request)
-    else
-      #openHAB 1.x endpoint
-      request = Net::HTTP::Get.new("/CMD?#{itemID}=#{newState}")
-      request.basic_auth(OPENHAB_USER, OPENHAB_PASSWORD)
-      response = http.request(request)
-    end      
-    puts response.body()
-    response.body()
+    itemRequest(itemID, newState)
+  end
+
+  # make request to OpenHAB. Specifying command will send a POST
+  # I believe this will work on OpenHAB2, but not tested
+  def itemRequest(itemID, command = nil)
+    uri = URI("#{@openhab_items_uri}/#{itemID}")
+    puts "[OpenHAB] Sending request for item '#{itemID}' with command '#{command}'"
+    Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
+      request = if command
+                  Net::HTTP::Post.new uri
+                else
+                  Net::HTTP::Get.new uri
+                end
+      request.basic_auth uri.user, uri.password if uri.user
+      request['Accept'] = 'application/json'
+
+      if command
+        request.body = command
+        request['Content-Type'] = 'text/plain'
+      end
+
+      response = http.request request # Net::HTTPResponse object
+
+      raise "Unexpected HTTP code from OpenHAB: #{response.code}" unless ['200', '201'].include? response.code
+      puts response.body
+      response.body
+    end
   end
 
   def refreshWeather()
