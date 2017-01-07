@@ -13,6 +13,8 @@ class OHApp
     :windSpeed, :windDirection, :windGust, :weatherObsTime, :sunrise, :sunset
 
   def initialize(openhab_uri)
+    raise 'Invalid OpenHAB uri' unless openhab_uri.start_with?('http')
+
     @openhab_items_uri = "#{openhab_uri}/rest/items"
 
     #@endpoint = endpoint
@@ -68,8 +70,16 @@ class OHApp
 
       response = http.request request # Net::HTTPResponse object
 
-      raise "Unexpected HTTP code from OpenHAB: #{response.code}" unless ['200', '201'].include? response.code
-      puts response.body
+      case response.code
+      when '200', '201'
+        # expected code, all good
+        puts "[OpenHAB] Response body: #{response.body}"
+      when '401'
+        raise 'Login to OpenHAB failed, check credentials'
+      else
+        raise "Unexpected HTTP code from OpenHAB: #{response.code}\n#{response.body}"
+      end
+
       response.body
     end
   end
